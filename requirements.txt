@@ -1,2 +1,6 @@
 fastapi
+SQLAlchemy
+alembic
+psycopg[binary]
+python-dotenv
 uvicorn[standard]
