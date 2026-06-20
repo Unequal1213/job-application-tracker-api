@@ -43,3 +43,11 @@ Companies:
 - `GET /companies/{company_id}`
 - `PATCH /companies/{company_id}`
 - `DELETE /companies/{company_id}`
+
+Applications:
+
+- `POST /applications`
+- `GET /applications`
+- `GET /applications/{application_id}`
+- `PATCH /applications/{application_id}`
+- `DELETE /applications/{application_id}`
