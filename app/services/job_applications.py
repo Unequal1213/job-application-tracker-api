@@ -3,7 +3,13 @@ from sqlalchemy.orm import Session
 
 from app.models.company import Company
 from app.models.job_application import JobApplication
-from app.schemas.job_application import JobApplicationCreate, JobApplicationUpdate
+from app.schemas.job_application import (
+    ApplicationSortBy,
+    ApplicationSortOrder,
+    ApplicationStatus,
+    JobApplicationCreate,
+    JobApplicationUpdate,
+)
 
 
 def create_application(
@@ -20,8 +26,34 @@ def create_application(
     return application
 
 
-def list_applications(db: Session) -> list[JobApplication]:
-    return list(db.scalars(select(JobApplication).order_by(JobApplication.id)).all())
+def list_applications(
+    db: Session,
+    *,
+    limit: int = 20,
+    offset: int = 0,
+    status: ApplicationStatus | None = None,
+    company_id: int | None = None,
+    source: str | None = None,
+    sort_by: ApplicationSortBy = "created_at",
+    sort_order: ApplicationSortOrder = "desc",
+) -> list[JobApplication]:
+    statement = select(JobApplication)
+
+    if status is not None:
+        statement = statement.where(JobApplication.status == status)
+    if company_id is not None:
+        statement = statement.where(JobApplication.company_id == company_id)
+    if source is not None:
+        statement = statement.where(JobApplication.source == source)
+
+    sort_column = getattr(JobApplication, sort_by)
+    if sort_order == "desc":
+        sort_column = sort_column.desc()
+    else:
+        sort_column = sort_column.asc()
+
+    statement = statement.order_by(sort_column).offset(offset).limit(limit)
+    return list(db.scalars(statement).all())
 
 
 def get_application(db: Session, application_id: int) -> JobApplication | None:

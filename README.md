@@ -51,3 +51,6 @@ Applications:
 - `GET /applications/{application_id}`
 - `PATCH /applications/{application_id}`
 - `DELETE /applications/{application_id}`
+
+`GET /applications` supports `limit`, `offset`, `status`, `company_id`,
+`source`, `sort_by`, and `sort_order` query parameters.

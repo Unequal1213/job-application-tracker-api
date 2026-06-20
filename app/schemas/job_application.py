@@ -4,6 +4,15 @@ from typing import Literal
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 ApplicationStatus = Literal["saved", "applied", "interview", "rejected", "offer"]
+ApplicationSortBy = Literal[
+    "applied_at",
+    "created_at",
+    "updated_at",
+    "position_title",
+    "status",
+    "source",
+]
+ApplicationSortOrder = Literal["asc", "desc"]
 
 
 class JobApplicationCreate(BaseModel):

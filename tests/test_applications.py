@@ -18,6 +18,7 @@ def create_application(
     company_id: int,
     position_title: str = "Backend Developer",
     status: str = "saved",
+    source: str | None = "LinkedIn",
 ) -> dict[str, Any]:
     response = client.post(
         "/applications",
@@ -26,7 +27,7 @@ def create_application(
             "position_title": position_title,
             "job_url": "https://example.com/jobs/backend",
             "status": status,
-            "source": "LinkedIn",
+            "source": source,
             "notes": "Looks interesting.",
         },
     )
@@ -68,8 +69,113 @@ def test_list_applications(client: TestClient) -> None:
 
     assert response.status_code == 200
     assert [item["position_title"] for item in response.json()] == [
-        "Backend Developer",
         "API Developer",
+        "Backend Developer",
+    ]
+
+
+def test_list_applications_limit_and_offset(client: TestClient) -> None:
+    company = create_company(client)
+    create_application(client, company["id"], position_title="Backend Developer")
+    create_application(client, company["id"], position_title="API Developer")
+    create_application(client, company["id"], position_title="Platform Developer")
+
+    response = client.get(
+        "/applications",
+        params={
+            "limit": 1,
+            "offset": 1,
+            "sort_by": "position_title",
+            "sort_order": "asc",
+        },
+    )
+
+    assert response.status_code == 200
+    assert [item["position_title"] for item in response.json()] == ["Backend Developer"]
+
+
+def test_list_applications_filters_by_status(client: TestClient) -> None:
+    company = create_company(client)
+    create_application(
+        client,
+        company["id"],
+        position_title="Saved Role",
+        status="saved",
+    )
+    create_application(
+        client,
+        company["id"],
+        position_title="Interview Role",
+        status="interview",
+    )
+
+    response = client.get("/applications", params={"status": "interview"})
+
+    assert response.status_code == 200
+    assert [item["position_title"] for item in response.json()] == ["Interview Role"]
+
+
+def test_list_applications_filters_by_company_id(client: TestClient) -> None:
+    first_company = create_company(client, name="Acme")
+    second_company = create_company(client, name="Globex")
+    create_application(client, first_company["id"], position_title="Acme Role")
+    create_application(client, second_company["id"], position_title="Globex Role")
+
+    response = client.get("/applications", params={"company_id": second_company["id"]})
+
+    assert response.status_code == 200
+    assert [item["position_title"] for item in response.json()] == ["Globex Role"]
+
+
+def test_list_applications_filters_by_source(client: TestClient) -> None:
+    company = create_company(client)
+    create_application(
+        client,
+        company["id"],
+        position_title="Referral Role",
+        source="Referral",
+    )
+    create_application(
+        client,
+        company["id"],
+        position_title="LinkedIn Role",
+        source="LinkedIn",
+    )
+
+    response = client.get("/applications", params={"source": "Referral"})
+
+    assert response.status_code == 200
+    assert [item["position_title"] for item in response.json()] == ["Referral Role"]
+
+
+def test_list_applications_default_sorting(client: TestClient) -> None:
+    company = create_company(client)
+    create_application(client, company["id"], position_title="Older Role")
+    create_application(client, company["id"], position_title="Newer Role")
+
+    response = client.get("/applications")
+
+    assert response.status_code == 200
+    assert [item["position_title"] for item in response.json()] == [
+        "Newer Role",
+        "Older Role",
+    ]
+
+
+def test_list_applications_ascending_sorting(client: TestClient) -> None:
+    company = create_company(client)
+    create_application(client, company["id"], position_title="Backend Developer")
+    create_application(client, company["id"], position_title="API Developer")
+
+    response = client.get(
+        "/applications",
+        params={"sort_by": "position_title", "sort_order": "asc"},
+    )
+
+    assert response.status_code == 200
+    assert [item["position_title"] for item in response.json()] == [
+        "API Developer",
+        "Backend Developer",
     ]
 
 
@@ -117,6 +223,24 @@ def test_invalid_status_returns_422(client: TestClient) -> None:
             "status": "waiting",
         },
     )
+
+    assert response.status_code == 422
+
+
+def test_invalid_status_filter_returns_422(client: TestClient) -> None:
+    response = client.get("/applications", params={"status": "waiting"})
+
+    assert response.status_code == 422
+
+
+def test_invalid_sort_by_returns_422(client: TestClient) -> None:
+    response = client.get("/applications", params={"sort_by": "company_id"})
+
+    assert response.status_code == 422
+
+
+def test_invalid_sort_order_returns_422(client: TestClient) -> None:
+    response = client.get("/applications", params={"sort_order": "oldest"})
 
     assert response.status_code == 422
 

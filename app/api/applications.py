@@ -1,11 +1,14 @@
 from typing import Annotated
 
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
 from sqlalchemy.orm import Session
 
 from app.database.database import get_db
 from app.models.job_application import JobApplication
 from app.schemas.job_application import (
+    ApplicationSortBy,
+    ApplicationSortOrder,
+    ApplicationStatus,
     JobApplicationCreate,
     JobApplicationResponse,
     JobApplicationUpdate,
@@ -15,6 +18,10 @@ from app.services import job_applications as application_service
 router = APIRouter(prefix="/applications", tags=["applications"])
 
 DbSession = Annotated[Session, Depends(get_db)]
+ApplicationLimit = Annotated[int, Query(ge=1, le=100)]
+ApplicationOffset = Annotated[int, Query(ge=0)]
+ApplicationStatusFilter = Annotated[ApplicationStatus | None, Query(alias="status")]
+ApplicationCompanyFilter = Annotated[int | None, Query(gt=0)]
 
 
 @router.post(
@@ -37,8 +44,26 @@ def create_application(
 
 
 @router.get("", response_model=list[JobApplicationResponse])
-def list_applications(db: DbSession) -> list[JobApplication]:
-    return application_service.list_applications(db)
+def list_applications(
+    db: DbSession,
+    limit: ApplicationLimit = 20,
+    offset: ApplicationOffset = 0,
+    status_filter: ApplicationStatusFilter = None,
+    company_id: ApplicationCompanyFilter = None,
+    source: str | None = None,
+    sort_by: ApplicationSortBy = "created_at",
+    sort_order: ApplicationSortOrder = "desc",
+) -> list[JobApplication]:
+    return application_service.list_applications(
+        db,
+        limit=limit,
+        offset=offset,
+        status=status_filter,
+        company_id=company_id,
+        source=source,
+        sort_by=sort_by,
+        sort_order=sort_order,
+    )
 
 
 @router.get("/{application_id}", response_model=JobApplicationResponse)
