@@ -26,6 +26,21 @@ and GitHub Actions CI.
 - Ruff linting.
 - GitHub Actions CI for every push and pull request.
 
+## Screenshots
+
+Swagger UI overview showing the available health, company, and application
+endpoints.
+
+![Swagger API overview](docs/images/swagger-overview.png)
+
+Example request body for creating a company through the Swagger UI.
+
+![Create company example](docs/images/create-company-example.png)
+
+Application statistics endpoint showing portfolio-friendly status counts.
+
+![Application statistics example](docs/images/application-stats-example.png)
+
 ## Tech Stack
 
 - Python 3.13
