@@ -1,9 +1,10 @@
 import os
+from collections.abc import Generator
 from datetime import UTC, datetime
 
 from dotenv import load_dotenv
 from sqlalchemy import create_engine
-from sqlalchemy.orm import DeclarativeBase, sessionmaker
+from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
 load_dotenv()
 
@@ -25,3 +26,11 @@ class Base(DeclarativeBase):
 
 def utc_now() -> datetime:
     return datetime.now(UTC)
+
+
+def get_db() -> Generator[Session]:
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

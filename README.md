@@ -29,3 +29,17 @@ Expected response:
 ```json
 {"status":"ok"}
 ```
+
+## API
+
+Health:
+
+- `GET /health`
+
+Companies:
+
+- `POST /companies`
+- `GET /companies`
+- `GET /companies/{company_id}`
+- `PATCH /companies/{company_id}`
+- `DELETE /companies/{company_id}`

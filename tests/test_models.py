@@ -1,9 +1,3 @@
-import os
-
-os.environ["DATABASE_URL"] = (
-    "postgresql+psycopg://username:password@localhost:5432/test_database"
-)
-
 from app.database.database import Base
 from app.models import Company, JobApplication
 
