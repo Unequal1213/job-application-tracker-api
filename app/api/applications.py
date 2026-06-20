@@ -11,6 +11,7 @@ from app.schemas.job_application import (
     ApplicationStatus,
     JobApplicationCreate,
     JobApplicationResponse,
+    JobApplicationStatsResponse,
     JobApplicationUpdate,
 )
 from app.services import job_applications as application_service
@@ -64,6 +65,11 @@ def list_applications(
         sort_by=sort_by,
         sort_order=sort_order,
     )
+
+
+@router.get("/stats", response_model=JobApplicationStatsResponse)
+def get_application_stats(db: DbSession) -> JobApplicationStatsResponse:
+    return application_service.get_application_stats(db)
 
 
 @router.get("/{application_id}", response_model=JobApplicationResponse)

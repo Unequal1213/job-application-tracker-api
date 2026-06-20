@@ -1,4 +1,4 @@
-from sqlalchemy import select
+from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from app.models.company import Company
@@ -9,6 +9,14 @@ from app.schemas.job_application import (
     ApplicationStatus,
     JobApplicationCreate,
     JobApplicationUpdate,
+)
+
+APPLICATION_STATUSES: tuple[ApplicationStatus, ...] = (
+    "saved",
+    "applied",
+    "interview",
+    "rejected",
+    "offer",
 )
 
 
@@ -58,6 +66,20 @@ def list_applications(
 
 def get_application(db: Session, application_id: int) -> JobApplication | None:
     return db.get(JobApplication, application_id)
+
+
+def get_application_stats(db: Session) -> dict[str, int]:
+    counts = dict.fromkeys(APPLICATION_STATUSES, 0)
+    rows = db.execute(
+        select(JobApplication.status, func.count()).group_by(JobApplication.status)
+    ).all()
+
+    total = 0
+    for application_status, count in rows:
+        counts[application_status] = count
+        total += count
+
+    return {"total": total, **counts}
 
 
 def update_application(

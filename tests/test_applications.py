@@ -189,6 +189,64 @@ def test_get_application_by_id(client: TestClient) -> None:
     assert response.json()["position_title"] == "Backend Developer"
 
 
+def test_application_stats_with_no_applications(client: TestClient) -> None:
+    response = client.get("/applications/stats")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "total": 0,
+        "saved": 0,
+        "applied": 0,
+        "interview": 0,
+        "rejected": 0,
+        "offer": 0,
+    }
+
+
+def test_application_stats_with_mixed_statuses(client: TestClient) -> None:
+    company = create_company(client)
+    create_application(client, company["id"], status="saved")
+    create_application(client, company["id"], status="applied")
+    create_application(client, company["id"], status="interview")
+    create_application(client, company["id"], status="rejected")
+    create_application(client, company["id"], status="offer")
+    create_application(client, company["id"], status="offer")
+
+    response = client.get("/applications/stats")
+
+    assert response.status_code == 200
+    assert response.json() == {
+        "total": 6,
+        "saved": 1,
+        "applied": 1,
+        "interview": 1,
+        "rejected": 1,
+        "offer": 2,
+    }
+
+
+def test_application_stats_update_after_deleting_application(
+    client: TestClient,
+) -> None:
+    company = create_company(client)
+    saved_application = create_application(client, company["id"], status="saved")
+    create_application(client, company["id"], status="offer")
+
+    delete_response = client.delete(f"/applications/{saved_application['id']}")
+    stats_response = client.get("/applications/stats")
+
+    assert delete_response.status_code == 204
+    assert stats_response.status_code == 200
+    assert stats_response.json() == {
+        "total": 1,
+        "saved": 0,
+        "applied": 0,
+        "interview": 0,
+        "rejected": 0,
+        "offer": 1,
+    }
+
+
 def test_missing_application_returns_404(client: TestClient) -> None:
     response = client.get("/applications/999")
 

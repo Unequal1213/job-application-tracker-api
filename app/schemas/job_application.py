@@ -55,3 +55,12 @@ class JobApplicationResponse(BaseModel):
     applied_at: datetime | None
     created_at: datetime
     updated_at: datetime
+
+
+class JobApplicationStatsResponse(BaseModel):
+    total: int
+    saved: int
+    applied: int
+    interview: int
+    rejected: int
+    offer: int
