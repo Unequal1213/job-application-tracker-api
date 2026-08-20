@@ -5,8 +5,7 @@
 Production-style FastAPI backend for tracking job applications, companies,
 statuses, notes, sources, and simple application statistics.
 
-This project is built as a portfolio backend API for a Junior Python Backend
-Developer role. It demonstrates REST API design, relational database modeling,
+The project demonstrates REST API design, relational database modeling,
 service-layer business logic, validation, migrations, automated tests, Docker,
 and GitHub Actions CI.
 
